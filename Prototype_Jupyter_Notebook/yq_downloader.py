@@ -1,9 +1,10 @@
 import yahooquery as yq
+from padronização import padronização
 import os
 import pandas as pd
 from tqdm import tqdm
 
-def CompleteDownload(tickers, período = '5y', intervalo = '1d', report = False):
+def downloader(tickers, período = '1y', intervalo = '1d', report = False, dir = 'dados_yq'):
     '''
     símbolos: lista, tupla, array unidimensional ou série contendo os tickers das ações
     '''
@@ -11,7 +12,8 @@ def CompleteDownload(tickers, período = '5y', intervalo = '1d', report = False)
     falhas = []
 
     for ticker in tqdm(tickers):
-        yq.Ticker(ticker, backoff_factor=0.1, retry=3, status_forcelist=[404, 429, 500, 502, 503, 504], asynchronous=True)
+        print(ticker)
+        query = yq.Ticker(ticker, backoff_factor=0.1, retry=3, status_forcelist=[404, 429, 500, 502, 503, 504], asynchronous=True)
         try:
             histórico = query.history(period=período, interval=intervalo,adj_timezone=True)
         except:
@@ -49,10 +51,10 @@ def CompleteDownload(tickers, período = '5y', intervalo = '1d', report = False)
             if col not in dados[tckr].columns:
                 dados[tckr][col] = 0
 
-    # Verifica se a pasta de destino existe, se não, cria-a
-    if not os.path.exists('dados_yq'):
-        os.makedirs('dados_yq')
-    # Itera pelo dicionário e salva cada dataframe como um arquivo CSV
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        
     for tckr, df in dados.items():
-        caminho_arquivo = os.path.join('dados', f'{tckr}.csv')  # Caminho completo para o arquivo CSV
-        df.to_csv(caminho_arquivo, index=False)  # Salva o dataframe como arquivo CSV
+        caminho_arquivo = os.path.join(dir, f'{tckr}.csv')
+        df.to_csv(caminho_arquivo, index=False)
+
